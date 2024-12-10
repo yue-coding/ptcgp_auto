@@ -1,0 +1,15 @@
+# 忽略 log 文件夹中的所有内容
+pic/log/*
+
+pic/screenshot.png
+pic/screenshot_status_checker.png
+pic/\[log]screenshot.png
+pic/\[log]screenshot_status_checker.png
+pic/\[oppo_unlock]_v2.png
+pic/\[log]oppo_unlock.png
+pic/\[log]oppo_unlock_log.png
+
+# 明确允许跟踪 .gitkeep 文件
+!pic/log/.gitkeep
+
+

@@ -148,7 +148,6 @@ class TaskManager:
                 loop_end_time = datetime.now()
 
 
-                # log_str = "循环",count_battle_solo,"次。当前时间",current_time_str,"。本次循环用时",loop_end_time-loop_start_time,'\n' #tuple
                 log_str = "循环"+str(self.count_battle_solo)+"次。当前时间"+str(current_time_str)+"。本次循环用时"+str(loop_end_time-loop_start_time)
                 append_to_file(os.path.join(self.log_dir, '.txt'),log_str+'\n') # 添加log
                 print(log_str)
@@ -1046,169 +1045,34 @@ class TaskManager:
     def get_xy(self, template, timeOut = timedelta(minutes=1, seconds=30), whole_screen=True):
 
         start_time = datetime.now()
-        # current_time = datetime.now()
-        # time_delta = current_time - start_time
-        # print(time_delta,current_time)
 
-        # while time_delta <= timedelta(minutes=2,seconds=30):
         while (datetime.now() - start_time) <= timeOut:
-
-            # if pause_event.is_set():
-            #     print("Paused during get_xy.")
-            #     return (pag.position())  # 原地点一下
-            # 不能在get_xy中暂停，不然daily task就不会去点了
             
             thread_name = threading.current_thread().name
             if thread_name == "MainLoopThread":
-                # 主线程中需要判断是否暂停
-                # print(f"Thread: {threading.current_thread().name}, pause_event: {self.pause_event.is_set()}, event_not_in_battle: {self.event_not_in_battle.is_set()}") # debug
                 if not self.pause_event.is_set() and self.event_not_in_battle.is_set():
-                    # and not event_not_in_battle.is_set()
                     print("Paused during get_xy for MainLoopThread.")
-                    # print(not self.pause_event.is_set()) # debug
-                    # print(not self.event_not_in_battle.is_set()) # debug
-                    # print(not self.pause_event.is_set() and not self.event_not_in_battle.is_set()) # debug
                     return (pag.position())  # 原地点一下
 
-
-            # current_time = datetime.now()
-            # time_delta = current_time - start_time
-            # print(time_delta,current_time)
-
-            """ 旧获取路径方法，已经不需要了。
-            # 获取当前目录路径
-            if getattr(sys, 'frozen', False):  # 检查是否为打包后的可执行文件
-                current_path = os.path.dirname(sys.executable)
-                # print(current_path,'current_path = os.path.dirname(sys.executable)')
-                current_path = sys._MEIPASS
-                # print(current_path,'current_path = sys._MEIPASS')
-            else:
-                current_path = os.path.dirname(__file__)
-                # print(current_path,'current_path = os.path.dirname(__file__)')
-            # 确保pic文件夹存在
-            pic_dir = os.path.join(current_path, 'pic')
-            if not os.path.exists(pic_dir):
-                os.makedirs(pic_dir)
-            """
             # 保存截图到当前目录的pic文件夹下
             screenshot_path = os.path.join(self.pic_dir, '[log]screenshot.png')
             pag.screenshot(screenshot_path)
 
-
-            # pag.screenshot("./pic/screenshot.png")
-            # screenshot
-            # img_screenshot = cv2.imread("./pic/screenshot.png")
             img_screenshot = cv2.imread(screenshot_path)
 
-            # get match object
-            # img_template = cv2.imread("./pic/"+template+".png")
-            # img_template = cv2.imread(f"./pic/{template}.png")
             template_path = os.path.join(self.pic_dir, f'{template}.png')
             img_template = cv2.imread(template_path)
-
-            """---debug部分---
-            # print(f"Current Working Directory: {os.getcwd()}") 
-            # 输出结果为
-            # C:\\Users\\Andre\\Desktop\\ptcg_auto
-
-            # 因为启动终端自动输入的命令为
-            
-            # PS C:\\Users\\Andre\\Desktop\\ptcg_auto>  c:; cd 'c:\\Users\\Andre\\Desktop\\ptcg_auto'; & 'c:\\Users\\Andre\\AppData\\Local\\Programs\\Python\\Python39\\python.exe' 'c:\\Users\\Andre\\.vscode\\extensions\\ms-python.debugpy-2024.12.0-win32-x64\\bundled\\libs\\debugpy\\adapter/../..\debugpy\\launcher' '7889' '--' 'C:\\Users\\Andre\\Desktop\\ptcg_auto\\auto-test\\test_ptcgp_006.py' 
-            
-            # 所以前面代码
-            # print(current_path,'current_path = os.path.dirname(__file__)')
-            # 输出的结果为 C:\\Users\\Andre\\Desktop\\ptcg_auto\\auto-test
-
-            # 这两个地址是有区别的，因为控制台cd的位置的问题，进入git的页面，而不是py文件所在的路径。
-
-            # 你在脚本中打印的路径之一是基于 os.getcwd()，而另一个是基于 os.path.dirname(__file__) 或 sys.executable。两者代表的路径含义不同：
-            # os.getcwd() 是程序启动时的工作目录。
-            # os.path.dirname(__file__) 或 sys.executable 是代码文件或解释器的实际所在路径。
-            # 1. os.getcwd() 是当前工作目录
-            # 2. os.path.dirname(__file__) 或 sys.executable 是脚本所在路径
-
-
-            #---debug部分结束---
-
-            #---测试match结果---
-            # get match object's height and width
-            height, width, channel = img_template.shape
-            
-            # get result
-            result = cv2.matchTemplate(img_screenshot,img_template,cv2.TM_CCOEFF_NORMED)
-
-            # 获取匹配的最大值（相似度最高的位置）
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-            
-            if max_val >= threshold:
-                # 如果相似度达到或超过阈值，执行程序A
-                # print("相似度足够高，执行程序A")
-                # 程序A的代码
-
-                # get upper left and lower right
-                # match_upper_left = cv2.minMaxLoc(result)[3]
-                match_upper_left = max_loc # 一样的
-
-                match_mid = (int(match_upper_left[0]+width/2),int(match_upper_left[1]+height/2))
-
-                # break # 相似度足够高，退出循环
-                return match_mid
-                
-            else:
-                # 如果相似度不足，执行程序B
-                print("相似度不足，执行程序B")
-                # 程序B的代码
-                # 程序B的代码（这里重新加载已经在循环内完成）
-                time.sleep(1)
-                current_time = datetime.now()
-                time_delta = current_time - start_time
-            
-            #---测试match结果结束---
-
-            #---额外多行注释字符转译bug---
-            即便是在多行注释内，出现\\U是不行的。直接杠U会被识别为特殊字符，然后就bug了。
-            您的代码中发生了 SyntaxError: (unicode error) 的问题，通常是因为字符串中包含了类似 \\U 的字符序列，Python 误将其解释为 Unicode 转义序列，但后续字符不足以形成有效的 Unicode 转义。
-            
-
-            # for thread in threading.enumerate():
-            #     print(thread)
-            """
 
             best_match_mid = self.img_match(img_screenshot, img_template, template)
             if best_match_mid:
                 return best_match_mid
 
-        
-        # print('超时，鼠标原地点击一次',datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        # log_dir = os.path.join(pic_dir,'log')
-        # if not os.path.exists(log_dir):
-        #     os.makedirs(log_dir)
-        # log_str = '超时，鼠标原地点击一次。时间：'+datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_str = f'超时，鼠标原地点击一次。寻找目标: {template}，当前时间'+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))
-        append_to_file(os.path.join(self.log_dir, '.txt'),log_str+"\n") # 添加log    
+        append_to_file(os.path.join(self.log_dir, '.txt'),log_str+"\n") 
         print(log_str)
         return (pag.position()) # 原地点一下
 
     def img_match(self, img_screenshot, img_template, template):
-    # def img_match(self, img_screenshot, img_template, pic_dir, log_dir, template, count):
-
-        #region ---debug部分---
-        # # 检查图像是否加载成功
-        # if img_screenshot is None:
-        #     raise ValueError(f"Screenshot image could not be loaded from the provided path.")
-        # if img_template is None:
-        #     raise ValueError(f"Template image could not be loaded for template: {template}")
-
-        # # 确保图像类型一致（转换为灰度图）
-        # if len(img_screenshot.shape) == 3:  # 彩色图像
-        #     img_screenshot = cv2.cvtColor(img_screenshot, cv2.COLOR_BGR2GRAY)
-        # if len(img_template.shape) == 3:  # 彩色图像
-        #     img_template = cv2.cvtColor(img_template, cv2.COLOR_BGR2GRAY)
-
-        # # 打印图像信息（调试用）
-        # print(f"Screenshot shape: {img_screenshot.shape}, dtype: {img_screenshot.dtype}")
-        # print(f"Template shape: {img_template.shape}, dtype: {img_template.dtype}")
-        #endregion
 
         # 设定一个相似度阈值，比如0.8
         threshold = 0.8
@@ -1220,11 +1084,9 @@ class TaskManager:
 
         for scale in scale_factors:
             # 根据比例缩放模板
-            # img_template = cv2.imread(f"./pic/{template}.png")
+
             scaled_template = cv2.resize(img_template, (0, 0), fx=scale, fy=scale)
-            # print(threading.current_thread().name, scaled_template.shape) # debug
             height, width, channel = scaled_template.shape
-            # height, width = scaled_template.shape # debug，不知道为什么有的时候3个报错，有的时候2个报错。彩色图像是3，灰白图像是2个参数。因为前面debug把彩色图像转成灰白了，所以3个报错。但是应该是一般是彩色图像所以是3个。
             
             # 进行模板匹配
             result = cv2.matchTemplate(img_screenshot, scaled_template, cv2.TM_CCOEFF_NORMED)
@@ -1248,7 +1110,6 @@ class TaskManager:
         append_to_file(os.path.join(log_dir, '.txt'),log_str+"\n")
         if threading.current_thread().name == 'DebugMissionThread':
             print(log_str)
-        # print(log_str)
         return None
 
 def append_to_file(filename, content):
@@ -1260,7 +1121,6 @@ def auto_click(cordinate_click):
         pag.moveTo(cordinate_click[0], cordinate_click[1], duration=0.1)
     else:
         print("Invalid coordinates, skipping move.")
-    # pag.moveTo(cordinate_click[0],cordinate_click[1],duration=0.1)
     pag.click()
     pag.moveTo(10,10)
     time.sleep(1)
@@ -1269,10 +1129,8 @@ def scheduler(task_manager):
     # 调度器函数
 
     task_daily_check_in_done = False
-    task_daily_auto_battle_done = False
     while True:
         now = datetime.now()
-        # print(now.hour, now.minute, now.second) # debug
         
         if now.hour == 1 and now.minute == 5 and not task_daily_check_in_done:
             log_str = "Pausing main loop for daily task... 当前时间"+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))
@@ -1283,7 +1141,6 @@ def scheduler(task_manager):
             task_manager.task_daily_check_in()
             task_manager.pause_event.set()
             task_daily_check_in_done = True
-            # time.sleep(60) # 确保时间进到下一分钟，而不会再次执行此程序 # 不需要了，因为一定会过这个时间
 
         if now.hour != 0 and now.minute == 25:
             print("Pausing main loop for temporary task...")
@@ -1291,101 +1148,15 @@ def scheduler(task_manager):
             task_manager.task_daily_auto_battle()
             task_manager.task_auto_claim_gift()
             task_manager.pause_event.set()
-            # task_daily_auto_battle_done = True 
-            # time.sleep(60) # 不需要了，因为一定会过这个时间
 
         if now.hour == 0 and now.minute == 0:
             task_daily_check_in_done = False
-            task_daily_auto_battle_done = False
         
         if now.minute == 20:
             print("Pausing main loop for Wonder Pick...")
             task_manager.pause_event.clear()
             task_manager.task_auto_check_free_wonder_pick()
             task_manager.pause_event.set()
-
-            # time.sleep(60) # 不需要了，因为一定会过这个时间
-
-        #region ---特殊状态检测+重启---
-        # current_status, button_mid = status_checker(task_manager)
-        # print(current_status, button_mid) # debug
-        # if current_status:
-        #     # TODO 改成另外两个特殊状态时不检测是否卡住
-        #     time.sleep(180) # 等待一会，以便double check确实是卡住了
-        #     current_status_double_check, button_mid_double_check = status_checker(task_manager)
-        #     if current_status_double_check:
-        #         task_manager.pause_event.clear()
-        #         log_str = '检测到特殊状态：'+current_status+' 再次检测：'+current_status_double_check
-        #         append_to_file(os.path.join(task_manager.log_dir, '.txt'),log_str+"\n")
-        #         print(log_str)
-        #         time.sleep(10)
-
-        #         # print(current_status, button_mid) # debug
-        #         # auto_click(button_mid_double_check) # 直接改成重启软件好了。或者是写多个if状态，根据template_list来判断当前到底卡哪里了
-
-        #         #region ---重启游戏---
-        #         # 进多任务
-        #         pag.moveTo(task_manager.window_position[0] + 0.5 * task_manager.window_size[0], 
-        #                 task_manager.window_position[1] + 0.98 * task_manager.window_size[1], 
-        #                 duration=0.1)
-        #         pag.middleClick() # 先回主页，确保多任务顺利打开
-        #         time.sleep(1)
-        #         pag.mouseDown(button='left')
-        #         pag.moveTo(task_manager.window_position[0] + 0.5 * task_manager.window_size[0], 
-        #                 task_manager.window_position[1] + 0.5 * task_manager.window_size[1], 
-        #                 duration=0.2)
-        #         time.sleep(0.1)
-        #         pag.mouseUp(button='left')
-
-        #         # 手动划掉任务栏，关闭程序
-        #         pag.moveTo(task_manager.window_position[0] + 0.5 * task_manager.window_size[0], 
-        #                 task_manager.window_position[1] + 0.75 * task_manager.window_size[1])
-        #         pag.mouseDown()
-        #         pag.moveTo(task_manager.window_position[0] + 0.5 * task_manager.window_size[0], 
-        #                 task_manager.window_position[1] + 0.2 * task_manager.window_size[1], 
-        #                 duration=0.1)
-        #         pag.mouseUp()
-
-        #         # 等待10秒
-        #         time.sleep(10)
-
-        #         # 打开游戏
-        #         start_time = datetime.now()
-        #         cordinate_click = get_xy('button_ptcgp_app',start_time,  task_manager.current_path, task_manager.pic_dir, task_manager.log_dir, task_manager.count_battle_solo, task_manager.pause_event)
-        #         auto_click(cordinate_click)
-
-        #         # 点击标题页面
-        #         time.sleep(3)
-        #         start_time = datetime.now()
-        #         cordinate_click = get_xy('button_ptcgp_title_page',start_time,  task_manager.current_path, task_manager.pic_dir, task_manager.log_dir, task_manager.count_battle_solo, task_manager.pause_event)
-        #         auto_click(cordinate_click)
-        #         #endregion
-
-        #         #region ---进单人对战-初级
-        #         # 点击 对战模式
-        #         time.sleep(15)
-        #         start_time = datetime.now()
-        #         cordinate_click = get_xy('button_page_battle',start_time,  task_manager.current_path, task_manager.pic_dir, task_manager.log_dir, task_manager.count_battle_solo, task_manager.pause_event)
-        #         auto_click(cordinate_click)
-
-        #         # 进单人模式
-        #         start_time = datetime.now()
-        #         cordinate_click = get_xy('button_battle_solo',start_time,  task_manager.current_path, task_manager.pic_dir, task_manager.log_dir, task_manager.count_battle_solo, task_manager.pause_event)
-        #         auto_click(cordinate_click)
-
-        #         # 点击初级对战
-        #         start_time = datetime.now()
-        #         cordinate_click = get_xy('button_battle_solo_beginner',start_time,  task_manager.current_path, task_manager.pic_dir, task_manager.log_dir, task_manager.count_battle_solo, task_manager.pause_event)
-        #         auto_click(cordinate_click)
-
-        #         # 完成，等待刷刷刷脚本自动运行
-        #         #endregion
-                
-        #         task_manager.pause_event.set()
-        #     else:
-        #         print('误判！')
-
-        #endregion
 
         time.sleep(1) # 每秒判断一次
 
@@ -1430,7 +1201,6 @@ def status_checker(task_manager):
     screenshot_path = os.path.join(task_manager.pic_dir, '[log]screenshot_status_checker.png')
     pag.screenshot(screenshot_path)
     img_screenshot = cv2.imread(screenshot_path)
-    # print(img_screenshot)
     
     template_list = [
         'ptcgp_date_change_01', # OK按钮
@@ -1451,10 +1221,6 @@ def status_checker(task_manager):
     return None, None
 
 def get_window_position(log_dir):
-    # # 获取所有窗口标题
-    # windows = pgw.getAllTitles()
-    # print("所有窗口标题:", windows)
-
     # 获取特定窗口
     window = pgw.getWindowsWithTitle('PCLM10')[0]  # 以标题部分匹配，如'PCLM10'
 
@@ -1494,14 +1260,9 @@ if __name__ == "__main__":
     # 获取当前目录路径
     if getattr(sys, 'frozen', False):  # 检查是否为打包后的可执行文件
         current_path = os.path.dirname(sys.executable)
-        # print(current_path,'current_path = os.path.dirname(sys.executable)')
         current_path = sys._MEIPASS
-        # print(current_path,'current_path = sys._MEIPASS')
     else:
         current_path = os.path.dirname(__file__)
-        # print(current_path,'current_path = os.path.dirname(__file__)')
-        # current_path = os.getcwd()
-        # TODO 需要确认这几个获得current_path方法有什么区别。
     # 确保pic文件夹存在
     pic_dir = os.path.join(current_path, 'pic')
     if not os.path.exists(pic_dir):

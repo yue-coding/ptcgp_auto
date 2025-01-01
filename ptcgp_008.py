@@ -714,7 +714,7 @@ def status_checker(task_manager):
 def get_window_position():
 
     # 获取特定窗口
-    window = pgw.getWindowsWithTitle('PCLM10')[0]  # 以标题部分匹配，如'PCLM10'
+    window = pgw.getWindowsWithTitle('MuMu')[0]  # 以标题部分匹配，如'PCLM10'
 
     # 获取窗口的位置和大小
     print("窗口左上角坐标:", window.topleft)  # 左上角坐标

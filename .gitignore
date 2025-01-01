@@ -12,4 +12,5 @@ pic/\[log]oppo_unlock_log.png
 # 明确允许跟踪 .gitkeep 文件
 !pic/log/.gitkeep
 
-
+.venv
+.idea
